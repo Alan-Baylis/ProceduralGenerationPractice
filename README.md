@@ -4,4 +4,5 @@ City buildings, emission lighting and banners will be randomly generated at star
 
 Use mouse to control the camera.
 
-Demo: niyuang.github.io
+
+<a href="http://niyuang.github.io/">Demo</a>
