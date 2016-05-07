@@ -1,8 +1,8 @@
-A one-week project as a procedural generation practice in Unity C#
+A one-week project made as a procedural generation practice in Unity C#
 
 City buildings, emission lighting and banners will be randomly generated at startup.
 
-Use mouse to control the camera.
+Use arrow keys to control the camera.
 
 
 <a href="http://niyuang.github.io/">Demo</a>
