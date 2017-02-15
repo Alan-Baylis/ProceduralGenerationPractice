@@ -2,17 +2,16 @@
 using System.Collections.Generic;
 
 public class ProceduralUtil {
-
 	public static void generateCube(Box box, Vector3[] baseVertices) {
 		Vector3 p0 = baseVertices [0];
 		Vector3 p1 = baseVertices [1];
 		Vector3 p2 = baseVertices [2];
 		Vector3 p3 = baseVertices [3];
 
-		Vector3 p4 = new Vector3(baseVertices[0].x, baseVertices[0].y + box.getHeight(), baseVertices[0].z);
-		Vector3 p5 = new Vector3(baseVertices[1].x, baseVertices[1].y + box.getHeight(), baseVertices[1].z);
-		Vector3 p6 = new Vector3(baseVertices[2].x, baseVertices[2].y + box.getHeight(), baseVertices[2].z);
-		Vector3 p7 = new Vector3(baseVertices[3].x, baseVertices[3].y + box.getHeight(), baseVertices[3].z);
+		Vector3 p4 = new Vector3(baseVertices[0].x, baseVertices[0].y + box.Height, baseVertices[0].z);
+		Vector3 p5 = new Vector3(baseVertices[1].x, baseVertices[1].y + box.Height, baseVertices[1].z);
+		Vector3 p6 = new Vector3(baseVertices[2].x, baseVertices[2].y + box.Height, baseVertices[2].z);
+		Vector3 p7 = new Vector3(baseVertices[3].x, baseVertices[3].y + box.Height, baseVertices[3].z);
 
 		Vector3[] vertices = new Vector3[] {
 
@@ -92,14 +91,13 @@ public class ProceduralUtil {
 			3 + 4 * 5, 2 + 4 * 5, 1 + 4 * 5
 		};
 
-		box.getMesh().vertices = vertices;
-		box.getMesh().normals = normals;
-		box.getMesh().uv = uvs;
-		box.getMesh().triangles = triangles;
+		box.Mesh.vertices = vertices;
+        box.Mesh.normals = normals;
+        box.Mesh.uv = uvs;
+        box.Mesh.triangles = triangles;
 
-        box.getMesh().RecalculateNormals();
-		box.getMesh().RecalculateBounds();
-		box.getMesh().Optimize();
+        box.Mesh.RecalculateNormals();
+        box.Mesh.RecalculateBounds();
 	}
 
     public static List<Vector3> generateSquareBaseFace(Transform transform, float width, float length) {
@@ -152,7 +150,7 @@ public class ProceduralUtil {
 
             for (int j = 0; j < baseVertices.Length; j++) {
             // To resize, vertices have to be tranformed from world to local
-			Vector3 lowerLevelWorldToLocal = box.getMeshFilter().transform.InverseTransformPoint(baseVertices[j]);
+			Vector3 lowerLevelWorldToLocal = box.MeshFilter.transform.InverseTransformPoint(baseVertices[j]);
             lowerLevelTransformedToLocal.Add(lowerLevelWorldToLocal);
 
                 float offset_x = baseBoundWidth * (1.0f - resizeRatio) / 2;
@@ -171,15 +169,15 @@ public class ProceduralUtil {
         Mesh upperMesh = extrudeAFace(box, upperLevel.ToArray(), levelHeight, false);
         combine[1].mesh = upperMesh;
 
-        combine [0].transform = box.getMeshFilter().transform.localToWorldMatrix;
-        combine [1].transform = box.getMeshFilter().transform.localToWorldMatrix;
+        combine [0].transform = box.MeshFilter.transform.localToWorldMatrix;
+        combine [1].transform = box.MeshFilter.transform.localToWorldMatrix;
 
         Mesh combinedMesh = new Mesh();
         combinedMesh.CombineMeshes(combine);
 
         // Step 3: Transform upper level into world and assign it to current box
         for (int i = 0; i < upperLevel.Count; i++) {
-            upperLevel[i] = box.getMeshFilter().transform.TransformPoint(upperLevel[i]);
+            upperLevel[i] = box.MeshFilter.transform.TransformPoint(upperLevel[i]);
         }
 
         box.extrudedFaceVertices = upperLevel.ToArray();
@@ -287,7 +285,7 @@ public class ProceduralUtil {
         extrudedMesh.uv = uvs.ToArray();
         extrudedMesh.RecalculateNormals();
         extrudedMesh.RecalculateBounds();
-        extrudedMesh.Optimize();
+        ;
 
 
         // set top face box
@@ -323,8 +321,8 @@ public class ProceduralUtil {
         float height = 0.4f;
 
         float randomHangingPosX = 0.0f;
-        float randomHangingPosZ = Random.Range(0.1f, box.getLength());
-        float randomHangingPosY = Random.Range(0.1f, box.getHeight());
+        float randomHangingPosZ = Random.Range(0.1f, box.Length);
+        float randomHangingPosY = Random.Range(0.1f, box.Length);
 
         int randomBaseStartingVertice = Random.Range(1, 2);
         Vector3 centerVertice;
@@ -342,7 +340,6 @@ public class ProceduralUtil {
         
         Vector3[] rectangleBase = generateRectangleBaseFromVertice(centerVertice, boardLength, width);
         
-        // need to fix: can be added a new method that handle board all at once
         List<Vector3> texturedBoard = new List<Vector3>();
         texturedBoard.Add(rectangleBase[2]);
         texturedBoard.Add(rectangleBase[3]);
@@ -460,37 +457,23 @@ public class ProceduralUtil {
 
         return remainingTriangles;
     }
-
-    /*
-    public static void testRemoveTrianglesFromList() {
-        List<int> meshTriangles = new List<int>(new int[] { 1, 2, 3, 4, 5, 6, 1, 3, 4, 2, 5, 6});
-        List<int> trianglesToRemove = new List<int>(new int[] { 1, 2, 3, 4, 5, 6});
-        
-        string debug = "testRemoveTrianglesFromList: ";
-        foreach (int t in ProceduralUtil.removeTrianglesFromList(meshTriangles, trianglesToRemove)) {
-            debug += t + " ";
-        }
-        Debug.Log(debug);
-    } */
-
-    // will be always passing world vertices
+    
     public static List<int> findTrianglesWithinVertices(Box box, Vector3[] vertices) {
         List<Vector3> localVerticeList = new List<Vector3>();
         List<int> triangleList = new List<int>();
 
         foreach (Vector3 worldVectice in vertices) {
-            localVerticeList.Add(box.getMeshFilter().transform.InverseTransformPoint(worldVectice));
+            localVerticeList.Add(box.MeshFilter.transform.InverseTransformPoint(worldVectice));
         }
-
-
-        for (int i = 0; i < box.getMeshFilter().mesh.triangles.Length; i += 3) {
+        
+        for (int i = 0; i < box.MeshFilter.mesh.triangles.Length; i += 3) {
             
-            if (localVerticeList.Contains(box.getMeshFilter().mesh.vertices[box.getMeshFilter().mesh.triangles[i]])
-                && localVerticeList.Contains(box.getMeshFilter().mesh.vertices[box.getMeshFilter().mesh.triangles[i + 1]])
-                && localVerticeList.Contains(box.getMeshFilter().mesh.vertices[box.getMeshFilter().mesh.triangles[i + 2]]) ) {
-                triangleList.Add(box.getMeshFilter().mesh.triangles[i]);
-                triangleList.Add(box.getMeshFilter().mesh.triangles[i + 1]);
-                triangleList.Add(box.getMeshFilter().mesh.triangles[i + 2]);
+            if (localVerticeList.Contains(box.MeshFilter.mesh.vertices[box.MeshFilter.mesh.triangles[i]])
+                && localVerticeList.Contains(box.MeshFilter.mesh.vertices[box.MeshFilter.mesh.triangles[i + 1]])
+                && localVerticeList.Contains(box.MeshFilter.mesh.vertices[box.MeshFilter.mesh.triangles[i + 2]]) ) {
+                triangleList.Add(box.MeshFilter.mesh.triangles[i]);
+                triangleList.Add(box.MeshFilter.mesh.triangles[i + 1]);
+                triangleList.Add(box.MeshFilter.mesh.triangles[i + 2]);
 
             } 
         }

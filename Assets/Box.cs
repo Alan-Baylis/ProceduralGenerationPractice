@@ -3,66 +3,126 @@ using System.Collections.Generic;
 
 public class Box : MonoBehaviour
 {
-
-	private float length;
+    #region private field 
+    private float length;
 	private float width;
 	private float height;
+    
+    private MeshRenderer _render;
+    private MeshFilter _filter;
+    private Mesh _mesh;
+    private MeshCollider _collider;
 
-	public float maxLength = 0.8f;
+    private List<Mesh> _meshList = new List<Mesh>();
+    private List<Vector3> debugVectices = new List<Vector3>();
+
+    private Material selfIlluminMainBuilding;
+    private Material boardMaterial;
+    private Texture2D emissionMap;
+    #endregion
+
+    #region public field 
+    public float maxLength = 0.8f;
 	public float maxWidth = 0.8f;
 
     public float heightFraction = 0.5f;
-
-    MeshRenderer _render;
-    MeshFilter _filter;
-    Mesh _mesh;
-    MeshCollider _collider;
-
+    
     public Vector3[] baseVertices;
-    // extrudedFaceVertices represents vertices on upper level. Will always be on world scope.
     public Vector3[] extrudedFaceVertices;
     public List<List<Vector3>> additionTextured;
+    #endregion
 
-    List<Mesh> _meshList = new List<Mesh>();
-    List<Vector3> debugVectices = new List<Vector3>();
+    #region setter and getter
+    public float Length
+    {
+        set
+        {
+            this.length = value;
+        }
+        get
+        {
+            return this.length;
+        }
+    }
 
-    Material selfIlluminMainBuilding;
-    Material boardMaterial;
+    public float Width
+    {
+        set
+        {
+            this.width = value;
+        }
+        get
+        {
+            return this.width;
+        }
+    }
 
-    private Texture2D emissionMap;
+    public float Height
+    {
+        set
+        {
+            this.height = value;
+        }
+        get
+        {
+            return this.height;
+        }
+    }
+
+    public Mesh Mesh
+    {
+        set
+        {
+            this._mesh = value;
+        }
+        get
+        {
+            return this._mesh;
+        }
+    }
+
+    public MeshFilter MeshFilter
+    {
+        set
+        {
+            this._filter = value;
+        }
+        get
+        {
+            return this._filter;
+        }
+    }
+    #endregion
+
 
     void Awake() {
-
-        // Minimum = 1
         length = Random.Range(0.5f, maxLength);
 		width = Random.Range(0.5f, maxWidth);
-
         height = Random.Range(10.0f / getDistanceTowardsCenter(), 10.0f / getDistanceTowardsCenter() + heightFraction);
         
+        // Random BaseShape
         int baseShape = Random.Range(0, 3);
 
         if (baseShape == 0)
         {
-            baseVertices = ProceduralUtil.generateSquareBaseFace(transform, getWidth(), getLength()).ToArray();
+            baseVertices = ProceduralUtil.generateSquareBaseFace(transform, Width, Length).ToArray();
         }
         else if (baseShape == 1)
         {
-            baseVertices = ProceduralUtil.generateBaseShape_1(transform, getWidth(), getLength(), 0.1f).ToArray();
+            baseVertices = ProceduralUtil.generateBaseShape_1(transform, Width, Length, 0.1f).ToArray();
         }
         else if (baseShape == 2) {
-            baseVertices = ProceduralUtil.generateBaseShape_2(transform, getWidth(), getLength(), 0.1f).ToArray();
+            baseVertices = ProceduralUtil.generateBaseShape_2(transform, Width, Length, 0.1f).ToArray();
         }
 
         additionTextured = new List<List<Vector3>>();
     }
-
-    // Use this for initialization
+    
     void Start()
     {
         _render = gameObject.AddComponent<MeshRenderer>();
-        // _render.materials[0].shader = Shader.Find("Diffuse");
-        
-        // Material for main building 
+
+        // Main building material
         selfIlluminMainBuilding = Resources.Load("Materials/apt_4", typeof(Material)) as Material;
         selfIlluminMainBuilding.SetColor("_EmissionColor", Color.white);
 
@@ -76,12 +136,12 @@ public class Box : MonoBehaviour
         _mesh = _filter.mesh;
         
         // generate Random level of towers
-        _meshList.Add(ProceduralUtil.extrudeAFace(this, baseVertices, getHeight(), false));
+        _meshList.Add(ProceduralUtil.extrudeAFace(this, baseVertices, Height, false));
 
         // need to perform strip in the first place or top face vertice will be overwritten
         int strip = Random.Range(0, 3);
         float stripSize = Random.Range(0.0f, 0.2f);
-        float stripHeight = Random.Range(0.0f, getHeight());
+        float stripHeight = Random.Range(0.0f, Height);
         if (strip == 0)
         {
             for (int i = 0; i < baseVertices.Length; i++)
@@ -103,8 +163,8 @@ public class Box : MonoBehaviour
             float randomRatio = Random.Range(0.0f, 1.0f);
             for (int i = 0; i < numberOfLevel; i++)
             {
-                _meshList.Add(ProceduralUtil.extrudeAFaceWithLevels(this, extrudedFaceVertices, getWidth(), getLength(), randomHeightLevel, randomRatio));
-                _meshList.Add(ProceduralUtil.extrudeAFaceWithLevels(this, extrudedFaceVertices, getWidth(), getLength(), randomHeightLevel, 1.0f / randomRatio));
+                _meshList.Add(ProceduralUtil.extrudeAFaceWithLevels(this, extrudedFaceVertices, Height, Length, randomHeightLevel, randomRatio));
+                _meshList.Add(ProceduralUtil.extrudeAFaceWithLevels(this, extrudedFaceVertices, Height, Length, randomHeightLevel, 1.0f / randomRatio));
             }
             
             for (int i = 0; i < extrudedFaceVertices.Length; i++)
@@ -117,7 +177,7 @@ public class Box : MonoBehaviour
             int numberOfLevel = Random.Range(0, 3);
             float randomRatio = Random.Range(0.0f, 1.0f); for (int i = 0; i < numberOfLevel; i++)
             {
-                _meshList.Add(ProceduralUtil.extrudeAFaceWithLevels(this, extrudedFaceVertices, getWidth(), getLength(), randomHeightLevel, randomRatio));
+                _meshList.Add(ProceduralUtil.extrudeAFaceWithLevels(this, extrudedFaceVertices, Width, Length, randomHeightLevel, randomRatio));
             }
             
             for (int i = 0; i < extrudedFaceVertices.Length; i++)
@@ -180,37 +240,17 @@ public class Box : MonoBehaviour
 
         this._filter.mesh = combinedMesh;
     }
-
-    // Update is called once per frame
-    void Update()
-    {
-
-    }
-
-    public float getLength() {
-        return length;
-    }
-
-	public float getWidth() {
-        return width;
-    }
-
-	public float getHeight() {
-		return height;
-	}
-
-	public Mesh getMesh() {
-		return _mesh;
-	}
-
-	public MeshFilter getMeshFilter() {
-		return _filter;
-	}
-
+    
+    /// <summary>
+    /// Calculate Distance of current transform from world center
+    /// </summary>
     private float getDistanceTowardsCenter() {
         return Mathf.Ceil(Mathf.Sqrt(transform.position.x * transform.position.x + transform.position.z * transform.position.z));
     }
 
+    /// <summary>
+    /// Combine different mesh from a mesh list 
+    /// </summary>
     private Mesh combineMeshes() {
         CombineInstance[] combine = new CombineInstance[_meshList.Count];
         for (int i = 0; i < _meshList.Count; i++) {
@@ -226,15 +266,10 @@ public class Box : MonoBehaviour
 
         return combinedMesh;
     }
-
-    // for debugging
-    /*
-	void OnDrawGizmos() {
-		for (int i = 0; i < debugVectices.Count; i++) {
-			Gizmos.DrawSphere (debugVectices[i], 0.1f);
-		}
-	} */
     
+    /// <summary>
+    /// Procedural Generate emission Map
+    /// </summary>
     private Texture2D generateEmissionMap(Texture mainTexture)
     {
         Texture2D emissionMap = new Texture2D(mainTexture.width, mainTexture.height);

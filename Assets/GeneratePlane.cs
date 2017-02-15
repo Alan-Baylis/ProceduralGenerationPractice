@@ -4,28 +4,24 @@ using System.Collections.Generic;
 [RequireComponent(typeof(MeshFilter), typeof(MeshRenderer))]
 public class GeneratePlane : MonoBehaviour {
 
+    #region private field
     private Mesh mesh;
     private Vector3[] vertices;
     private Vector2[] uv;
+    #endregion
+
+    #region public field
     public int xSize;
     public int zSize;
     public float height;
     
     public GameObject cube;
+    #endregion
 
     void Awake() {
         generate();
         gameObject.GetComponent<MeshRenderer>().material = Resources.Load("Materials/Snow", typeof(Material)) as Material; ;
     }
-
-	// Use this for initialization
-	void Start () {
-	}
-	
-	// Update is called once per frame
-	void Update () {
-	
-	}
 
     private void generate() {
         mesh = new Mesh();
